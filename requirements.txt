@@ -1,0 +1,43 @@
+# Data Processing
+pandas
+numpy
+scikit-learn
+xgboost
+imbalanced-learn
+
+# Explainability
+shap
+lime
+dice-ml
+
+# Ablation Studies & Model Evaluation
+optuna
+mlflow
+
+# LLM & Agent Orchestration
+langchain
+langchain-groq
+groq
+google-generativeai
+langchain-google-genai
+python-dotenv
+
+# Geospatial
+geopy
+
+# Visualisation
+matplotlib
+seaborn
+plotly
+
+# Frontend
+gradio
+
+# Notebook Support
+ipykernel
+jupyter
+
+# Utilities
+requests
+tqdm
+joblib
