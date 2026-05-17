@@ -26,7 +26,23 @@ KENYA_FACILITIES_FILE   = DATA_RAW / "kenya_health_facilities.xls"
 MATERNAL_HEALTH_FILE    = DATA_RAW / "maternal_health_risk_data.csv"
 GLOBOCAN_FILE           = DATA_RAW / "cancer_incidence_risk_kenya.csv"
 
-# DHS files — update once approved and downloaded
-DHS_INDIVIDUAL   = DATA_RAW / "dhs_kenya_individual.csv"
-DHS_HOUSEHOLD    = DATA_RAW / "dhs_kenya_household.csv"
-DHS_GPS          = DATA_RAW / "dhs_kenya_gps.csv"
+# DHS files
+DHS_INDIVIDUAL        = DATA_RAW / "KEIR8CFL.DTA"
+DHS_HOUSEHOLD         = DATA_RAW / "KEHR8CFL.DTA"
+DHS_HOUSEHOLD_MEMBER  = DATA_RAW / "KEPR8CFL.DTA"
+DHS_GPS_SHAPEFILE     = DATA_RAW / "gps" / "KEGE8AFL.shp"
+DHS_GEOSPATIAL_COV    = DATA_RAW / "KEGC8AFL.CSV"
+
+# ─────────────────────────────────────────
+# MODEL SETTINGS
+# ─────────────────────────────────────────
+RANDOM_STATE = 42
+TEST_SIZE    = 0.2
+CV_FOLDS     = 5
+
+# ─────────────────────────────────────────
+# MLFLOW SETTINGS
+# ─────────────────────────────────────────
+MLFLOW_TRACKING_URI        = "file:///" + str(OUTPUTS_MLFLOW).replace("\\", "/")
+MLFLOW_EXPERIMENT_AGENT1   = "Agent1_RiskScreener"
+MLFLOW_EXPERIMENT_AGENT4   = "Agent4_CompliancePredictor"

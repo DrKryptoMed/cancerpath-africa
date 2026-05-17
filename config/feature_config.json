@@ -1,0 +1,21 @@
+{
+  "agent1_features": [
+    "v012",
+    "v190",
+    "rural",
+    "v106",
+    "hiv_tested",
+    "hiv_positive",
+    "v483a"
+  ],
+  "agent4_features": [
+    "v012",
+    "v190",
+    "rural",
+    "v106",
+    "hiv_tested",
+    "hiv_positive",
+    "v394",
+    "v483a"
+  ]
+}
