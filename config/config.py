@@ -46,3 +46,19 @@ CV_FOLDS     = 5
 MLFLOW_TRACKING_URI        = "file:///" + str(OUTPUTS_MLFLOW).replace("\\", "/")
 MLFLOW_EXPERIMENT_AGENT1   = "Agent1_RiskScreener"
 MLFLOW_EXPERIMENT_AGENT4   = "Agent4_CompliancePredictor"
+
+# ─────────────────────────────────────────
+# LLM SETTINGS
+# ─────────────────────────────────────────
+ACTIVE_LLM   = os.getenv("ACTIVE_LLM", "groq")
+ACTIVE_MODEL = os.getenv("ACTIVE_MODEL", "llama-3.1-70b-versatile")
+
+LLM_MODELS = {
+    "groq": [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+    ],
+    "gemini": [
+        "gemini-1.5-flash",
+    ]
+}
