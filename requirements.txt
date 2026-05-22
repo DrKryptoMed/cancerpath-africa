@@ -31,7 +31,7 @@ seaborn
 plotly
 
 # Frontend
-gradio>=4.44.0
+gradio==6.14.0
 
 # Notebook Support
 ipykernel

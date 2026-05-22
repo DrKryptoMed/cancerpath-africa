@@ -252,7 +252,7 @@ def run_cancerpath(
 def build_interface():
     with gr.Blocks(
         title="CancerPath-Africa",
-        theme=gr.themes.Soft()
+        theme=gr.themes.Soft(primary_hue="blue")
     ) as demo:
 
         # Header
