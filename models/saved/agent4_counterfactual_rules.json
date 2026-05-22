@@ -1,33 +1,3 @@
-{
-  "top_barrier": "Minutes to Facility",
-  "rules": [
-    {
-      "rank": 1,
-      "feature": "v483a",
-      "condition": "> 30 minutes",
-      "intervention": "Transport Support",
-      "feasibility": "High"
-    },
-    {
-      "rank": 2,
-      "feature": "v190",
-      "condition": "<= 2 (poorest quintiles)",
-      "intervention": "Financial Support / NHIS",
-      "feasibility": "Medium"
-    },
-    {
-      "rank": 3,
-      "feature": "v106",
-      "condition": "<= 1 (no/primary education)",
-      "intervention": "Health Literacy Intervention",
-      "feasibility": "Medium"
-    },
-    {
-      "rank": 4,
-      "feature": "v394",
-      "condition": "== 0 (no recent facility visit)",
-      "intervention": "Community Outreach Visit",
-      "feasibility": "High"
-    }
-  ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:969769e037b5e20497fb75ece935081f12849ccdbe4e827949246ffed59dc48f
+size 811
