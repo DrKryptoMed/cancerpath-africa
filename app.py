@@ -9,7 +9,6 @@ import gradio as gr
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
 import sys
 import os
 from dotenv import load_dotenv
@@ -34,42 +33,49 @@ KENYA_COUNTIES = [
     "Vihiga", "Wajir", "West Pokot"
 ]
 
-# ── SHAP Chart Builder ───────────────────────────────────
-def build_shap_chart(feature_names, shap_values,
-                     title, color='#2E75B6'):
-    """Build interactive Plotly SHAP bar chart"""
-    df = pd.DataFrame({
-        'Feature':    feature_names,
-        'SHAP Value': shap_values
-    }).sort_values('SHAP Value', ascending=True)
+# ── SHAP Chart Builder — returns HTML string ─────────────
+def build_shap_chart(feature_names, shap_values, title):
+    """Build interactive Plotly SHAP bar chart as HTML string"""
+    if not feature_names or not shap_values:
+        return "<p>No SHAP data available.</p>"
 
-    colors = [
-        '#E74C3C' if v > 0 else '#2E75B6'
-        for v in df['SHAP Value']
-    ]
+    try:
+        df = pd.DataFrame({
+            'Feature':    feature_names,
+            'SHAP Value': [float(v) for v in shap_values]
+        }).sort_values('SHAP Value', ascending=True)
 
-    fig = go.Figure(go.Bar(
-        x=df['SHAP Value'],
-        y=df['Feature'],
-        orientation='h',
-        marker_color=colors,
-        text=[f"{v:+.3f}" for v in df['SHAP Value']],
-        textposition='outside'
-    ))
+        colors = ['#E74C3C' if v > 0 else '#2E75B6' for v in df['SHAP Value']]
 
-    fig.update_layout(
-        title=dict(text=title, font=dict(size=14)),
-        xaxis_title='SHAP Value (impact on prediction)',
-        yaxis_title='',
-        height=350,
-        margin=dict(l=20, r=80, t=50, b=40),
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        showlegend=False,
-        xaxis=dict(zeroline=True, zerolinecolor='black',
-                   zerolinewidth=1)
-    )
-    return fig.to_html(full_html=False, include_plotlyjs='cdn')
+        fig = go.Figure(go.Bar(
+            x=df['SHAP Value'],
+            y=df['Feature'],
+            orientation='h',
+            marker_color=colors,
+            text=[f"{v:+.3f}" for v in df['SHAP Value']],
+            textposition='outside'
+        ))
+
+        fig.update_layout(
+            title=dict(text=title, font=dict(size=14)),
+            xaxis_title='SHAP Value (impact on prediction)',
+            yaxis_title='',
+            height=350,
+            margin=dict(l=20, r=80, t=50, b=40),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            showlegend=False,
+            xaxis=dict(zeroline=True, zerolinecolor='black', zerolinewidth=1)
+        )
+        return fig.to_html(full_html=False, include_plotlyjs='cdn')
+    except Exception as e:
+        return f"<p>Chart error: {str(e)}</p>"
+
+
+# ── Empty chart placeholder ──────────────────────────────
+def empty_chart():
+    return "<p style='color:gray;padding:20px;'>Run the pipeline to see SHAP explanation.</p>"
+
 
 # ── Pipeline Runner ──────────────────────────────────────
 def run_cancerpath(
@@ -79,16 +85,10 @@ def run_cancerpath(
 ):
     """Main pipeline function called by Gradio"""
 
-    # Map inputs to model features
     location_map   = {'Urban': 0, 'Rural': 1}
-    edu_map        = {
-        'No Education': 0, 'Primary': 1,
-        'Secondary': 2,   'Higher': 3
-    }
+    edu_map        = {'No Education': 0, 'Primary': 1, 'Secondary': 2, 'Higher': 3}
     hiv_tested_map = {'Yes': 1, 'No': 0}
-    hiv_status_map = {
-        'Negative': 0, 'Positive': 1, 'Unknown': 2
-    }
+    hiv_status_map = {'Negative': 0, 'Positive': 1, 'Unknown': 2}
     visit_map      = {'Yes': 1, 'No': 0}
     screened_map   = {'Yes': True, 'No': False}
 
@@ -100,56 +100,57 @@ def run_cancerpath(
         'hiv_tested':   hiv_tested_map[hiv_tested],
         'hiv_positive': hiv_status_map[hiv_status],
         'v394':         visit_map[facility_visit],
-        'v483a':        30,  # placeholder — overridden by orchestrator
+        'v483a':        30,
         'county':       county,
         'self_reported_screened': screened_map[self_reported]
     }
 
-    # Run pipeline
+    error_outputs = (
+        "⚠️ Pipeline error — please try again.",
+        empty_chart(),
+        "⚠️ No facility data.",
+        "⚠️ No recommendation generated.",
+        "⚠️ No compliance data.",
+        empty_chart(),
+        "⚠️ No report generated."
+    )
+
     try:
         result = run_pipeline(patient_data)
     except Exception as e:
-        error_msg = f"Pipeline error: {str(e)}"
-        empty_fig = go.Figure()
-        return (error_msg,) * 2 + (empty_fig,) * 2 + (error_msg,) * 3
+        return (f"**Pipeline error:** {str(e)}",) + error_outputs[1:]
 
-    a1 = result.get('agent1', {})
-    a2 = result.get('agent2', {})
-    a3 = result.get('agent3', {})
-    a4 = result.get('agent4', {})
+    a1      = result.get('agent1', {})
+    a2      = result.get('agent2', {})
+    a3      = result.get('agent3', {})
+    a4      = result.get('agent4', {})
     summary = result.get('summary', {})
 
     # ── Tab 1: Risk Assessment ───────────────────────────
     risk_emoji = {'HIGH': '🔴', 'MODERATE': '🟡', 'LOW': '🟢'}
     risk_level = a1.get('risk_level', 'UNKNOWN')
-    risk_text  = (
-        f"## {risk_emoji.get(risk_level, '⚪')} "
-        f"{a1.get('risk_label', 'Unknown')}\n\n"
+
+    risk_text = (
+        f"## {risk_emoji.get(risk_level, '⚪')} {a1.get('risk_label', 'Unknown')}\n\n"
         f"**Probability:** {a1.get('probability', 0)*100:.1f}%  \n"
         f"**Threshold used:** {a1.get('threshold_used', 0.30)}\n\n"
         f"---\n\n"
         f"{a1.get('plain_summary', '')}"
     )
-
     if a1.get('inconsistency_flag'):
-        risk_text += (
-            f"\n\n⚠️ **INCONSISTENCY FLAG:**  \n"
-            f"{a1.get('inconsistency_msg', '')}"
-        )
+        risk_text += f"\n\n⚠️ **INCONSISTENCY FLAG:**  \n{a1.get('inconsistency_msg', '')}"
 
-    # SHAP chart for Agent 1
-    shap_fig1 = build_shap_chart(
+    shap_html1 = build_shap_chart(
         feature_names=a1.get('feature_names', []),
         shap_values=a1.get('shap_values', []),
-        title='Feature Impact on Screening Non-Uptake',
-        color='#2E75B6'
+        title='Feature Impact on Screening Non-Uptake'
     )
 
     # ── Tab 2: Facility Map ──────────────────────────────
-    facilities = a2.get('top_facilities', [])
-    rationale  = a2.get('rationale', '')
-
+    facilities    = a2.get('top_facilities', [])
+    rationale     = a2.get('rationale', 'No rationale available.')
     facility_text = f"**Decision Rationale:**  \n{rationale}\n\n---\n\n"
+
     for f in facilities:
         facility_text += (
             f"**[{f.get('rank', '?')}] {f.get('name', 'Unknown')}**  \n"
@@ -158,13 +159,12 @@ def run_cancerpath(
             f"Distance: {f.get('distance_km', '?')} km  \n"
             f"Owner: {f.get('owner', 'Unknown')}  \n\n"
         )
-
     if not facilities:
         facility_text += "No facilities found. Try a different county."
 
     # ── Tab 3: Recommendation ────────────────────────────
     rec_text = (
-        f"**Mode:** {a3.get('mode', 'Unknown')}  \n\n"
+        f"**Mode:** `{a3.get('mode', 'Unknown')}`\n\n"
         f"---\n\n"
         f"{a3.get('recommendation', 'No recommendation generated.')}"
     )
@@ -175,10 +175,9 @@ def run_cancerpath(
         'MODERATE_BARRIER': '🟡',
         'LOW_BARRIER':      '🟢'
     }
-    barrier_level = a4.get('barrier_level', 'UNKNOWN')
+    barrier_level   = a4.get('barrier_level', 'UNKNOWN')
     compliance_text = (
-        f"## {barrier_emoji.get(barrier_level, '⚪')} "
-        f"{a4.get('barrier_label', 'Unknown')}\n\n"
+        f"## {barrier_emoji.get(barrier_level, '⚪')} {a4.get('barrier_label', 'Unknown')}\n\n"
         f"**Probability:** {a4.get('probability', 0)*100:.1f}%  \n"
         f"**Threshold used:** {a4.get('threshold_used', 0.45)}\n\n"
         f"---\n\n"
@@ -195,82 +194,63 @@ def run_cancerpath(
                 f"Feasibility: {iv['feasibility']}  \n\n"
             )
 
-    # SHAP chart for Agent 4
-    shap_fig4 = build_shap_chart(
+    shap_html4 = build_shap_chart(
         feature_names=a4.get('feature_names', []),
         shap_values=a4.get('shap_values', []),
-        title='Feature Impact on Compliance Barrier',
-        color='#E74C3C'
+        title='Feature Impact on Compliance Barrier'
     )
 
     # ── Tab 5: Full Report ───────────────────────────────
-    report_text = f"""## CancerPath-Africa — Patient Case Summary
-
----
-
-### Risk Assessment
-- **Risk Level:** {summary.get('risk_level', 'Unknown')}
-- **Probability:** {summary.get('risk_probability', 0)*100:.1f}%
-- **Top Risk Factors:**
-"""
+    report_text = f"## CancerPath-Africa — Patient Case Summary\n\n---\n\n"
+    report_text += f"### Risk Assessment\n"
+    report_text += f"- **Risk Level:** {summary.get('risk_level', 'Unknown')}\n"
+    report_text += f"- **Probability:** {summary.get('risk_probability', 0)*100:.1f}%\n"
+    report_text += f"- **Top Risk Factors:**\n"
     for rf in summary.get('top_risk_factors', []):
-        report_text += (
-            f"  - {rf['feature']} "
-            f"(SHAP: {rf['shap_value']:+.3f})\n"
-        )
+        report_text += f"  - {rf['feature']} (SHAP: {rf['shap_value']:+.3f})\n"
 
-    report_text += f"""
----
+    report_text += f"\n---\n\n### Facility Recommendation\n"
+    report_text += f"- **Facility:** {summary.get('recommended_facility', 'Unknown')}\n"
+    report_text += f"- **Distance:** {summary.get('facility_distance_km', 'Unknown')} km\n"
 
-### Facility Recommendation
-- **Recommended Facility:** {summary.get('recommended_facility', 'Unknown')}
-- **Distance:** {summary.get('facility_distance_km', 'Unknown')} km
+    report_text += f"\n---\n\n### Compliance Prediction\n"
+    report_text += f"- **Barrier Level:** {summary.get('barrier_level', 'Unknown')}\n"
+    report_text += f"- **Probability:** {summary.get('barrier_probability', 0)*100:.1f}%\n"
+    report_text += f"- **Interventions Required:** {len(summary.get('interventions', []))}\n"
 
----
-
-### Compliance Prediction
-- **Barrier Level:** {summary.get('barrier_level', 'Unknown')}
-- **Probability:** {summary.get('barrier_probability', 0)*100:.1f}%
-- **Interventions Required:** {len(summary.get('interventions', []))}
-
----
-
-### System Information
-- **Recommendation Mode:** {summary.get('recommendation_mode', 'Unknown')}
-- **Inconsistency Flag:** {'⚠️ Yes' if summary.get('inconsistency_flag') else '✅ No'}
-"""
+    report_text += f"\n---\n\n### System Information\n"
+    report_text += f"- **Recommendation Mode:** {summary.get('recommendation_mode', 'Unknown')}\n"
+    report_text += f"- **Inconsistency Flag:** {'⚠️ Yes' if summary.get('inconsistency_flag') else '✅ No'}\n"
 
     return (
-        risk_text, shap_fig1,
+        risk_text,
+        shap_html1,
         facility_text,
         rec_text,
-        compliance_text, shap_fig4,
+        compliance_text,
+        shap_html4,
         report_text
     )
 
+
 # ── Gradio Interface ─────────────────────────────────────
 def build_interface():
-    with gr.Blocks(
-        title="CancerPath-Africa",
-    ) as demo:
+    with gr.Blocks(title="CancerPath-Africa") as demo:
 
-        # Header
         gr.Markdown("""
 # 🏥 CancerPath-Africa
-### Cervical Cancer Triage & Referral Intelligence System — Kenya
-*An Explainable Multi-Agent AI Framework for Community Health Workers*
+### Cervical Cancer Screening Outreach & Referral Intelligence System — Kenya
+*An Explainable Multi-Agent AI Pipeline for Community Health Workers*
 ---
 """)
 
         with gr.Row():
-            # ── Left Panel: Patient Input ────────────────
+            # Left Panel
             with gr.Column(scale=1):
                 gr.Markdown("### 👤 Patient Information")
 
-                age = gr.Slider(
-                    minimum=15, maximum=49, value=25, step=1,
-                    label="Age"
-                )
+                age = gr.Slider(minimum=15, maximum=49, value=25, step=1, label="Age")
+
                 wealth_index = gr.Dropdown(
                     choices=[1, 2, 3, 4, 5], value=2,
                     label="Wealth Index (1=Poorest, 5=Richest)"
@@ -280,12 +260,8 @@ def build_interface():
                     label="Location"
                 )
                 education = gr.Dropdown(
-                    choices=[
-                        "No Education", "Primary",
-                        "Secondary", "Higher"
-                    ],
-                    value="Primary",
-                    label="Education Level"
+                    choices=["No Education", "Primary", "Secondary", "Higher"],
+                    value="Primary", label="Education Level"
                 )
                 hiv_tested = gr.Radio(
                     choices=["Yes", "No"], value="No",
@@ -293,8 +269,7 @@ def build_interface():
                 )
                 hiv_status = gr.Dropdown(
                     choices=["Negative", "Positive", "Unknown"],
-                    value="Unknown",
-                    label="HIV Status"
+                    value="Unknown", label="HIV Status"
                 )
                 facility_visit = gr.Radio(
                     choices=["Yes", "No"], value="No",
@@ -307,44 +282,33 @@ def build_interface():
 
                 gr.Markdown("### 📍 Location")
                 county = gr.Dropdown(
-                    choices=KENYA_COUNTIES,
-                    value="Nairobi",
+                    choices=KENYA_COUNTIES, value="Nairobi",
                     label="County"
                 )
 
-                run_btn = gr.Button(
-                    "🔍 Run Pipeline",
-                    variant="primary",
-                    size="lg"
-                )
+                run_btn = gr.Button("🔍 Run Pipeline", variant="primary", size="lg")
 
-            # ── Right Panel: Results Tabs ─────────────────
+            # Right Panel
             with gr.Column(scale=2):
                 with gr.Tabs():
 
-                    # Tab 1 — Risk Assessment
                     with gr.Tab("🔴 Risk Assessment"):
-                        risk_output = gr.Markdown()
-                        shap_plot1 = gr.HTML(label="SHAP Feature Importance")
+                        risk_output  = gr.Markdown(value="*Run the pipeline to see results.*")
+                        shap_output1 = gr.HTML(value=empty_chart())
 
-                    # Tab 2 — Facility Map
                     with gr.Tab("🏥 Nearest Facilities"):
-                        facility_output = gr.Markdown()
+                        facility_output = gr.Markdown(value="*Run the pipeline to see results.*")
 
-                    # Tab 3 — Recommendation
                     with gr.Tab("📋 Referral Plan"):
-                        rec_output = gr.Markdown()
+                        rec_output = gr.Markdown(value="*Run the pipeline to see results.*")
 
-                    # Tab 4 — Compliance
                     with gr.Tab("⚠️ Compliance Prediction"):
-                        compliance_output = gr.Markdown()
-                        shap_plot4 = gr.HTML(label="SHAP Barrier Importance")
+                        compliance_output = gr.Markdown(value="*Run the pipeline to see results.*")
+                        shap_output4      = gr.HTML(value=empty_chart())
 
-                    # Tab 5 — Full Report
                     with gr.Tab("📄 Full Report"):
-                        report_output = gr.Markdown()
+                        report_output = gr.Markdown(value="*Run the pipeline to see results.*")
 
-        # Wire button to pipeline
         run_btn.click(
             fn=run_cancerpath,
             inputs=[
@@ -353,15 +317,14 @@ def build_interface():
                 self_reported, county
             ],
             outputs=[
-                risk_output, shap_plot1,
+                risk_output, shap_output1,
                 facility_output,
                 rec_output,
-                compliance_output, shap_plot4,
+                compliance_output, shap_output4,
                 report_output
             ]
         )
 
-        # Footer
         gr.Markdown("""
 ---
 *CancerPath-Africa — AI in Healthcare Bootcamp 2026 Capstone Project*  
@@ -370,12 +333,12 @@ def build_interface():
 
     return demo
 
+
 # ── Launch ───────────────────────────────────────────────
 if __name__ == "__main__":
     demo = build_interface()
     demo.launch(
         server_name="0.0.0.0",
         server_port=7860,
-        share=False,
-        theme=gr.themes.Soft(primary_hue="blue")
+        share=False
     )
