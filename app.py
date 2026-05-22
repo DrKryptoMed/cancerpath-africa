@@ -69,7 +69,7 @@ def build_shap_chart(feature_names, shap_values,
         xaxis=dict(zeroline=True, zerolinecolor='black',
                    zerolinewidth=1)
     )
-    return fig
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')
 
 # ── Pipeline Runner ──────────────────────────────────────
 def run_cancerpath(
@@ -325,9 +325,7 @@ def build_interface():
                     # Tab 1 — Risk Assessment
                     with gr.Tab("🔴 Risk Assessment"):
                         risk_output = gr.Markdown()
-                        shap_plot1  = gr.Plot(
-                            label="SHAP Feature Importance"
-                        )
+                        shap_plot1 = gr.HTML(label="SHAP Feature Importance")
 
                     # Tab 2 — Facility Map
                     with gr.Tab("🏥 Nearest Facilities"):
@@ -340,9 +338,7 @@ def build_interface():
                     # Tab 4 — Compliance
                     with gr.Tab("⚠️ Compliance Prediction"):
                         compliance_output = gr.Markdown()
-                        shap_plot4 = gr.Plot(
-                            label="SHAP Barrier Importance"
-                        )
+                        shap_plot4 = gr.HTML(label="SHAP Barrier Importance")
 
                     # Tab 5 — Full Report
                     with gr.Tab("📄 Full Report"):
