@@ -67,7 +67,7 @@ def build_shap_chart(feature_names, shap_values, title):
             showlegend=False,
             xaxis=dict(zeroline=True, zerolinecolor='black', zerolinewidth=1)
         )
-        return fig.to_html(full_html=False, include_plotlyjs='cdn')
+        return fig
     except Exception as e:
         return f"<p>Chart error: {str(e)}</p>"
 
@@ -111,7 +111,7 @@ def run_cancerpath(
         "⚠️ No facility data.",
         "⚠️ No recommendation generated.",
         "⚠️ No compliance data.",
-        empty_chart(),
+        None,
         "⚠️ No report generated."
     )
 
@@ -294,7 +294,7 @@ def build_interface():
 
                     with gr.Tab("🔴 Risk Assessment"):
                         risk_output  = gr.Markdown(value="*Run the pipeline to see results.*")
-                        shap_output1 = gr.HTML(value=empty_chart())
+                        shap_output1 = gr.Plot()
 
                     with gr.Tab("🏥 Nearest Facilities"):
                         facility_output = gr.Markdown(value="*Run the pipeline to see results.*")
@@ -304,7 +304,7 @@ def build_interface():
 
                     with gr.Tab("⚠️ Compliance Prediction"):
                         compliance_output = gr.Markdown(value="*Run the pipeline to see results.*")
-                        shap_output4      = gr.HTML(value=empty_chart())
+                        shap_output4 = gr.Plot()
 
                     with gr.Tab("📄 Full Report"):
                         report_output = gr.Markdown(value="*Run the pipeline to see results.*")
