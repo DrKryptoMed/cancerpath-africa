@@ -252,7 +252,6 @@ def run_cancerpath(
 def build_interface():
     with gr.Blocks(
         title="CancerPath-Africa",
-        theme=gr.themes.Soft(primary_hue="blue")
     ) as demo:
 
         # Header
@@ -381,5 +380,6 @@ if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
         server_port=7860,
-        share=False
+        share=False,
+        theme=gr.themes.Soft(primary_hue="blue")
     )
