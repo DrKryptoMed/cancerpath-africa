@@ -1,6 +1,5 @@
 ---
-title: CancerPath-Africa
-emoji: 🏥
+title: CancerPath-Africa🏥
 colorFrom: blue
 colorTo: red
 sdk: gradio
@@ -18,7 +17,7 @@ Outreach Prioritisation and Referral Navigation in Kenya**
 *AI in Healthcare Bootcamp 2026 — Capstone Project*
 
 [![Python](https://img.shields.io/badge/Python-3.13-blue)](https://python.org)
-[![Gradio](https://img.shields.io/badge/Gradio-4.36-orange)](https://gradio.app)
+[![Gradio](https://img.shields.io/badge/Gradio-4.36-orange)](https://huggingface.co/spaces/DrKryptoMed/cancerpath-africa)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
@@ -49,7 +48,7 @@ cancer screening outreach prioritisation and referral navigation.
 
 The system integrates classical machine learning, LLM-powered
 reasoning, geospatial facility mapping, and explainable AI into a
-single end-to-end pipeline — deployable in low-resource Sub-Saharan
+single end-to-end pipeline that is deployable in low-resource Sub-Saharan
 African healthcare settings.
 
 ---
@@ -168,7 +167,7 @@ recommendations.
 - **Threshold:** 0.45 (all metrics improved simultaneously)
 - **Performance:** AUC-ROC 0.7804 | F1 0.8355 | Recall 0.8270
 - **XAI:** SHAP + rule-based counterfactual interventions
-- **Top feature:** Minutes to facility (SHAP: 0.62) — dominant
+- **Top feature:** Minutes to facility (SHAP: 0.62) is the dominant
   predictor of compliance barriers
 
 ---
@@ -183,7 +182,7 @@ recommendations.
 | Agent 4 | SHAP + counterfactuals | Barrier ranking + interventions |
 
 **Key XAI finding:** Unknown HIV status and never having tested
-for HIV are the strongest predictors of screening non-uptake —
+for HIV are the strongest predictors of screening non-uptake.
 confirming healthcare system disengagement as the primary barrier
 to cervical cancer screening in Kenya.
 
@@ -207,15 +206,15 @@ to cervical cancer screening in Kenya.
 2. **Threshold optimisation** reduced Agent 1 false negatives
    by 71% (996 → 288) at minimal precision cost
 3. **Minutes to facility** is the dominant compliance barrier
-   predictor (SHAP: 0.62) — 1.7x more influential than wealth
+   predictor (SHAP: 0.62) with 1.7x more influence than wealth
 4. **Counterintuitive finding:** Urban women show higher
-   screening non-uptake than rural women — warranting further
+   screening non-uptake than rural women warranting further
    investigation
 5. **Agent 4 outperforms Agent 1** across all metrics
-   (MCC: 0.41 vs 0.23) — compliance prediction is more
+   (MCC: 0.41 vs 0.23). Compliance prediction is more
    tractable than screening behaviour prediction
 6. **Resampling strategies** (SMOTE, ADASYN) showed no
-   consistent improvement over class weights — consistent
+   consistent improvement over class weights which was consistent
    across both models
 
 ---
