@@ -2,15 +2,8 @@ venv/
 .env
 __pycache__/
 *.pyc
-*.pkl
-*.csv
-data/
-outputs/
-.DS_Store
-models/saved/*.npy
-models/saved/*.pkl
-models/ablation/*.csv
 data/raw/
-data/processed/
 data/external/
 outputs/mlflow/
+.DS_Store
+geocoding_checkpoint.csv
