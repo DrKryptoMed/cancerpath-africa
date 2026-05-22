@@ -7,3 +7,8 @@ data/external/
 outputs/mlflow/
 .DS_Store
 geocoding_checkpoint.csv
+outputs/
+models/ablation/
+data/processed/dhs_*.csv
+data/processed/y_agent*.csv
+test_shap.py
