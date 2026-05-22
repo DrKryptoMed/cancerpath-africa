@@ -99,12 +99,27 @@ def run_pipeline(patient_data: dict) -> dict:
                 county=county,
                 risk_level=agent1_result['risk_level']
             )
-            # Add required keys for Agent 3
+            # Normalise county fallback structure
+            # to match GPS-based structure
             if agent2_result.get('facilities'):
-                agent2_result['primary_facility'] = \
-                    agent2_result['facilities'][0]
-                agent2_result['top_facilities'] = \
+                facilities_with_rank = []
+                for i, f in enumerate(
                     agent2_result['facilities'][:3]
+                ):
+                    f['rank']        = i + 1
+                    f['owner']       = f.get('owner', 'Unknown')
+                    facilities_with_rank.append(f)
+                agent2_result['primary_facility'] = \
+                    facilities_with_rank[0]
+                agent2_result['top_facilities'] = \
+                    facilities_with_rank
+                agent2_result['rationale'] = (
+                    f"County-based search for {county}. "
+                    f"{agent2_result['facilities_found']} "
+                    f"oncology-capable facilities found. "
+                    f"GPS coordinates unavailable — "
+                    f"distances not calculated."
+                )
         else:
             agent2_result = {
                 'error': 'No location data provided',
@@ -153,12 +168,17 @@ def run_pipeline(patient_data: dict) -> dict:
             oncology_km = pipeline_output['agent2'][
                 'primary_facility'
             ].get('distance_km', None)
-            if oncology_km:
-                patient_data['v483a'] = min(
-                    round(oncology_km * 2), 200
-                )
-                print(f"      Distance override: {oncology_km}km → "
-                    f"{patient_data['v483a']} min")
+            if oncology_km and oncology_km != 'N/A':
+                try:
+                    patient_data['v483a'] = min(
+                        round(float(oncology_km) * 2), 200
+                    )
+                    print(f"      Distance override: {oncology_km}km → "
+                        f"{patient_data['v483a']} min")
+                except (ValueError, TypeError):
+                    print("      Distance override skipped — no GPS data")
+            else:
+                print("      Distance override skipped — county fallback")
 
         agent4_result = predict_compliance(patient_data)
         pipeline_output['agent4'] = agent4_result
