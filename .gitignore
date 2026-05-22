@@ -7,3 +7,10 @@ __pycache__/
 data/
 outputs/
 .DS_Store
+models/saved/*.npy
+models/saved/*.pkl
+models/ablation/*.csv
+data/raw/
+data/processed/
+data/external/
+outputs/mlflow/
