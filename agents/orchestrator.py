@@ -227,21 +227,23 @@ def _build_summary(output: dict) -> dict:
 # ── Audit Logger ─────────────────────────────────────────
 def _log_pipeline(output: dict):
     """Save pipeline run to audit log"""
-    log_dir  = Path(__file__).resolve().parent.parent / 'outputs/reports'
-    log_file = log_dir / 'pipeline_audit_log.jsonl'
+    try:
+        log_dir = Path(__file__).resolve().parent.parent / 'outputs/reports'
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / 'pipeline_audit_log.jsonl'
 
-    log_entry = {
-        'timestamp':    output.get('timestamp'),
-        'risk_level':   output.get('summary', {}).get('risk_level'),
-        'barrier_level': output.get('summary', {}).get('barrier_level'),
-        'facility':     output.get('summary', {}).get(
-                            'recommended_facility'),
-        'mode':         output.get('summary', {}).get(
-                            'recommendation_mode'),
-    }
+        log_entry = {
+            'timestamp':     output.get('timestamp'),
+            'risk_level':    output.get('summary', {}).get('risk_level'),
+            'barrier_level': output.get('summary', {}).get('barrier_level'),
+            'facility':      output.get('summary', {}).get('recommended_facility'),
+            'mode':          output.get('summary', {}).get('recommendation_mode'),
+        }
 
-    with open(log_file, 'a') as f:
-        f.write(json.dumps(log_entry) + '\n')
+        with open(log_file, 'a') as f:
+            f.write(json.dumps(log_entry) + '\n')
+    except Exception as e:
+        print(f"      Audit log skipped: {e}")
 
 # ── Test Function ────────────────────────────────────────
 if __name__ == "__main__":
