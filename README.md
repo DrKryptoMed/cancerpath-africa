@@ -336,16 +336,16 @@ print(result['summary'])
 
 ## Limitations
 
-- Agent 1 relies on proxy variables for screening history —
+- Agent 1 relies on proxy variables for screening history mainly beacause
   DHS is a population survey, not a clinical registry
 - Agent 3 LLM recommendations not validated by oncologists
   at scale
 - Compliance model trained on distance as proxy for
-  non-compliance — not actual referral outcome data
-- System validated on Kenya data — transferability to other
-  SSA countries requires local dataset adaptation
+  non-compliance and not actual referral outcome data
+- System validated on Kenya data with transferability to other
+  SSA countries requiring local dataset adaptation
 - Agent 2 distances estimated from county centroids when GPS
-  unavailable — not exact patient-level distances
+  unavailable and not exact patient-level distances
 
 ---
 
@@ -367,7 +367,7 @@ print(result['summary'])
 
 ## Acknowledgements
 
-- AI in Healthcare Bootcamp 2026
+- AI in Healthcare Bootcamp 2026 (Digital Health Africa)
 - DHS Program (Kenya 2022 survey data)
 - Open Africa (Kenya Health Facilities dataset)
 - WHO GLOBOCAN 2022
