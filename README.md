@@ -71,6 +71,7 @@ community health worker support.
 ---
 
 ## System Architecture
+```
 Patient / Health Worker Input
 ↓
 ┌─────────────────────────────────┐
@@ -115,6 +116,7 @@ Referral Action Plan
 │  UNIFIED PATIENT SUMMARY        │
 │  + Audit Trail Log              │
 └─────────────────────────────────┘
+```
 ---
 
 ## Agent Descriptions
@@ -220,6 +222,7 @@ to cervical cancer screening in Kenya.
 ---
 
 ## Repository Structure
+```
 cancerpath-africa/
 │
 ├── agents/
@@ -262,6 +265,7 @@ cancerpath-africa/
 ├── requirements.txt
 ├── README.md
 └── .env.example                    ← Environment variable template
+```
 ---
 
 ## Installation
